@@ -1,0 +1,6 @@
+2 0.6
+coke milk bread beer
+bread coke
+milk bread
+water sugar oil
+salt
