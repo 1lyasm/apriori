@@ -1,4 +1,4 @@
 all:
 	cargo build
-run:
+run: all
 	cargo run
