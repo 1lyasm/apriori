@@ -3,11 +3,31 @@ use std::io::BufRead;
 fn print_hashmap<K: std::fmt::Debug, V: std::fmt::Debug>(
     hash_map: &std::collections::HashMap<K, V>,
 ) {
-    print!("print_hashmap: [ ");
+    print!("print_hashmap: length: {}, hashmap: [ ", hash_map.len());
     for (key, value) in hash_map {
         print!("{{{:?}: {:?}}} ", key, value);
     }
     print!("\n");
+}
+
+fn fill_freq_items<B: std::io::BufRead>(
+    item_counts: &mut std::collections::HashMap<String, i64>,
+    lines: std::io::Lines<B>,
+    support: i64,
+) {
+    for line in lines {
+        let words: Vec<_> = line.as_ref().unwrap().split(" ").collect();
+        for word in words {
+            item_counts
+                .entry(word.to_owned())
+                .and_modify(|counter| *counter += 1)
+                .or_insert(1);
+        }
+    }
+    print_hashmap(&item_counts);
+
+    item_counts.retain(|_, value| *value >= support);
+    print_hashmap(&item_counts);
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -25,23 +45,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("main: confidence: {}", confidence);
 
     let mut item_counts = std::collections::HashMap::<String, i64>::new();
+    fill_freq_items(&mut item_counts, lines, support);
 
-    for line in lines {
-        let words: Vec<_> = line.as_ref().unwrap().split(" ").collect();
-        for word in words {
-            item_counts
-                .entry(word.to_owned())
-                .and_modify(|counter| *counter += 1)
-                .or_insert(1);
-        }
-    }
 
-    print_hashmap(&item_counts);
-
-    item_counts.retain(|_, value| *value >= support);
-
-    print_hashmap(&item_counts);
 
     Ok(())
 }
-
