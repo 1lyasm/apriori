@@ -1,4 +1,4 @@
-2 0.6
+1 0.6
 coke milk bread beer
 bread coke
 milk bread
