@@ -2,8 +2,13 @@ use std::io::BufRead;
 
 fn print_hashmap<K: std::fmt::Debug, V: std::fmt::Debug>(
     hash_map: &std::collections::HashMap<K, V>,
+    msg: String,
 ) {
-    print!("print_hashmap: length: {}, hashmap: [ ", hash_map.len());
+    print!(
+        "print_hashmap {}: length: {}, hashmap: [ ",
+        msg,
+        hash_map.len()
+    );
     for (key, value) in hash_map {
         print!("{{{:?}: {:?}}} ", key, value);
     }
@@ -14,9 +19,10 @@ fn fill_freq_items(
     item_counts: &mut std::collections::HashMap<String, i64>,
     lines: &Vec<String>,
     support: i64,
-) -> Result<(), Box<dyn std::error::Error>> {
+) {
     for line in &lines[1..] {
         let words: Vec<_> = line.split(" ").collect();
+
         for word in words {
             item_counts
                 .entry(word.to_owned())
@@ -24,12 +30,10 @@ fn fill_freq_items(
                 .or_insert(1);
         }
     }
-    print_hashmap(&item_counts);
+    print_hashmap(&item_counts, "".to_string());
 
     item_counts.retain(|_, value| *value >= support);
-    print_hashmap(&item_counts);
-
-    Ok(())
+    print_hashmap(&item_counts, "after filter".to_string());
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -50,11 +54,12 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     println!("main: confidence: {}", confidence);
 
     let mut item_counts = std::collections::HashMap::<String, i64>::new();
-    fill_freq_items(&mut item_counts, &lines, support)?;
+    fill_freq_items(&mut item_counts, &lines, support);
 
-    let mut itemset_counts = std::collections::HashMap::<(String, String), i64>::new();
+    let mut pair_counts = std::collections::HashMap::<(String, String), i64>::new();
     for line in &lines[1..] {
         let words: Vec<_> = line.split(" ").collect();
+
         for i in 0..words.len() {
             for j in i + 1..words.len() {
                 let mut left_word = words.get(i).unwrap().to_string();
@@ -67,7 +72,7 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
                 }
 
                 if item_counts.contains_key(&left_word) && item_counts.contains_key(&right_word) {
-                    itemset_counts
+                    pair_counts
                         .entry((left_word.clone(), right_word.clone()))
                         .and_modify(|counter| *counter += 1)
                         .or_insert(1);
@@ -75,7 +80,11 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             }
         }
     }
-    print_hashmap(&itemset_counts);
+    print_hashmap(&pair_counts, "".to_string());
+
+    pair_counts.retain(|_, value| *value >= support);
+    print_hashmap(&pair_counts, "after filter".to_string());
 
     Ok(())
 }
+
