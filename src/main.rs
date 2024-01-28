@@ -5,14 +5,14 @@ fn print_hashmap<K: std::fmt::Debug, V: std::fmt::Debug>(
     msg: String,
 ) {
     print!(
-        "print_hashmap {}: length: {}, hashmap: [ ",
+        "print_hashmap{}: length: {}, hashmap: [ ",
         msg,
         hash_map.len()
     );
     for (key, value) in hash_map {
         print!("{{{:?}: {:?}}} ", key, value);
     }
-    print!("\n");
+    print!("]\n");
 }
 
 fn fill_freq_items(
@@ -33,7 +33,7 @@ fn fill_freq_items(
     print_hashmap(&item_counts, "".to_string());
 
     item_counts.retain(|_, value| *value >= support);
-    print_hashmap(&item_counts, "after filter".to_string());
+    print_hashmap(&item_counts, " after filter".to_string());
 }
 
 fn main() -> Result<(), Box<dyn std::error::Error>> {
@@ -83,7 +83,24 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
     print_hashmap(&pair_counts, "".to_string());
 
     pair_counts.retain(|_, value| *value >= support);
-    print_hashmap(&pair_counts, "after filter".to_string());
+    print_hashmap(&pair_counts, " after filter".to_string());
+
+    println!("\nAssociation rules:");
+
+    for (key, value) in pair_counts {
+        let right_confidence = value as f64 / *(item_counts.get(&key.0).unwrap()) as f64;
+        let left_confidence = value as f64 / *(item_counts.get(&key.1).unwrap()) as f64;
+
+        if right_confidence >= confidence {
+            println!("{} -> {}, confidence: {:.3}", key.0, key.1, right_confidence);
+        }
+
+        if left_confidence >= confidence {
+            println!("{} -> {}, confidence: {:.3}", key.1, key.0, left_confidence);
+        }
+    }
+
+    print!("\n");
 
     Ok(())
 }
